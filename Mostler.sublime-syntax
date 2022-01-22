@@ -1,0 +1,121 @@
+%YAML 1.2
+---
+# Syntax: sublimetext.com/docs/syntax.html
+name: Mostler
+file_extensions:
+  - mst
+  - msh
+first_line_match: |-
+  (?xi:
+    ^\#!(?:.*[\/ ])?mostler$ # shebang
+  )
+scope: source.mst
+
+variables:
+  illegal_names: (?:if|else|while|do|for|return|as)
+  control_keywords: \b(:if|else|while|do|for)\b
+  builtin_functions: \b(?x:print|input)\b
+  builtin_types: \b(?x:int|float|bool|str)\b
+  non_func_keywords: \b(if|else|while|do|for)\b
+
+contexts:
+  main:
+    - include: comment-single-line
+    - include: string-double
+    - include: string-single
+    - include: label
+    - include: number
+    - include: operator
+    - include: label
+    - include: punctuation
+    - include: function
+    - include: const
+    # - include: shebang
+    - include: keyword
+
+  comment-single-line:
+    - match: \#
+      scope: punctuation.definition.comment.mst
+      push:
+        - meta_scope: comment.line.mst
+        - match: $\n?
+          pop: true
+
+  string-double:
+    - match: '"'
+      scope: punctuation.definition.string.begin.mst
+      push:
+        - meta_scope: string.quoted.double.mst
+        - match: ^.$
+          scope: constant.character.escape.mst
+        - match: '"'
+          scope: punctuation.definition.string.end.mst
+          pop: true
+
+  number:
+    - match: \b\d+\b
+      scope: constant.numberic.integer.mst
+
+  operator:
+    - match: '\!|\&\&|\|\|'
+      scope: keyword.operator.logical.mst
+
+  punctuation:
+    - match: \.
+      scope: punctuation.delimiter.period.dot.mst
+    - match: \,
+      scope: punctuation.delimiter.comma.mst
+    - match: \;
+      scope: punctuation.definition.other.semicolon.mst
+    - match: ':'
+      scope: punctuation.separator.key-value.colon.mst
+    - match: \?
+      scope: punctuation.definition.other.questionmark.mst
+    - match: \(
+      scope: punctuation.section.parens.begin.mst
+    - match: \)
+      scope: punctuation.section.parens.end.mst
+    - match: \[
+      scope: punctuation.section.brackets.begin.mst
+    - match: \]
+      scope: punctuation.section.brackets.end.mst
+    - match: \\
+      scope: punctuation.definition.other.multi-line.mst
+
+  keyword:
+    - match: \b(int|float|bool|str|void)\b
+      scope: storage.type.mst
+    - match: \b(true|false|null)\b
+      scope: constant.mst
+    - match: \b(while|do|for|return)\b
+      scope: keyword.control.mst
+    - match: \b(if|else)\b
+      scope: keyword.control.conditional.mst
+    - match: \bimport\b
+      scope: keyword.control.import.mst
+    - match: \bconst\b
+      scope: storage.modifier.mst
+
+  label:
+    - match: '(^\s*?[a-zA-Z_0-9]{1,})(?:\s*?\(.*\)|)\s*?:'
+      captures:
+        1: entity.name.function.mst
+
+  function:
+    - match: \b{{builtin_functions}}\b
+      scope: support.function.mst
+
+  string-single:
+    - match: \'
+      scope: punctuation.definition.string.begin.mst
+      push:
+        - meta_scope: string.quoted.double.mst
+        - match: ^.$
+          scope: constant.character.escape.mst
+        - match: \'
+          scope: punctuation.definition.string.end.mst
+          pop: true
+
+  const:
+    - match: '\b(?:[\p{Lu}_][\p{Lu}_\d]*)?[\p{Lu}]{2,}[\p{Lu}_\d]*\b'
+      scope: meta.other.constant.mst
